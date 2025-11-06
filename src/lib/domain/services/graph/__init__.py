@@ -1,5 +1,5 @@
 from __future__ import annotations
-from collections import deque
+from collections import deque, defaultdict
 from typing import Optional, List, Tuple, Set, Dict, FrozenSet
 import math
 import random
@@ -10,52 +10,53 @@ from src.lib.domain.models.graph import Graph
 from src.lib.domain.models.partition import Partition
 from src.lib.domain.types.general import CommunityId
 
-def singleton_partition(G: Graph) -> Partition:
-    return Partition({v: v for v in G.nodes()})
-
 def aggregate_graph(G: Graph, P_refined: Partition) -> Graph:
+    """
+    Contract: sum *every* underlying undirected edge exactly once into the supergraph.
+    This avoids under-counting when multiple base edges map to the same (su, sv).
+    """
+    # Map base nodes to supernodes
     comm_nodes = [frozenset(P_refined.members(cid)) for cid in P_refined.community_ids()]
     node_to_super: Dict[NodeLike, FrozenSet[NodeLike]] = {}
     for supernode in comm_nodes:
         for u in supernode:
             node_to_super[u] = supernode
-    G2 = Graph()
-    seen_pairs: Set[FrozenSet[NodeLike]] = set()
-    for u in G.nodes():
-        su = node_to_super[u]
-        for v, w in G.adj.get(u, {}).items():
-            sv = node_to_super[v]
-            key: FrozenSet[NodeLike] = frozenset((su, sv))
-            if key in seen_pairs:
-                continue
-            seen_pairs.add(key)
-            G2.add_edge(su, sv, w)
-    return G2
 
-def lift_partition_to_aggregated(P_old: Partition, P_refined: Partition) -> Partition:
-    agg_nodes = [frozenset(P_refined.members(cid)) for cid in P_refined.community_ids()]
-    mapping: Dict[NodeLike, CommunityId] = {}
-    for supernode in agg_nodes:
-        representative: NodeLike = next(iter(supernode))
-        mapping[supernode] = P_old.community_of(representative)
-    return Partition(mapping)
+    # Accumulate weights per supernode pair, counting each base edge once
+    pair_weights: Dict[Tuple[FrozenSet[NodeLike], FrozenSet[NodeLike]], float] = defaultdict(float)
+    visited_base_pairs: Set[FrozenSet[NodeLike]] = set()
+
+    for u in G.nodes():
+        for v, w in G.adj.get(u, {}).items():
+            uv = frozenset((u, v))
+            if uv in visited_base_pairs:
+                continue  # already counted the undirected edge (u,v)
+            visited_base_pairs.add(uv)
+            su = node_to_super[u]
+            sv = node_to_super[v]
+            pair_weights[(su, sv)] += w
+
+    G2 = Graph()
+    for (su, sv), w in pair_weights.items():
+        G2.add_edge(su, sv, w)
+    return G2
 
 def move_nodes_fast(G: Graph, P: Partition, delta_fn: DeltaFn) -> Partition:
     nodes = list(G.nodes())
     random.shuffle(nodes)
     Q = deque(nodes)
-    in_queue = set(nodes)
+    in_queue: Set[NodeLike] = set(nodes)
 
     while Q:
         v = Q.popleft()
         in_queue.discard(v)
 
         neighbor_comms = {P.community_of(u) for u in G.neighbors(v)}
-        candidate_comms: List[Optional[object]] = list(neighbor_comms)
+        candidate_comms: List[Optional[CommunityId]] = list(neighbor_comms)
         candidate_comms.append(P.community_of(v))
-        candidate_comms.append(None)
+        candidate_comms.append(None)  # None => new singleton community
 
-        best_C: Optional[object] = None
+        best_C: Optional[CommunityId] = None
         best_delta = float("-inf")
         for C in candidate_comms:
             delta = delta_fn(G, P, v, C)
@@ -100,7 +101,7 @@ def merge_nodes_subset(
         if not P.is_singleton(v):
             continue
 
-        T: List[object] = []
+        T: List[CommunityId] = []
         for cid in P.community_ids():
             C = P.members(cid)
             if not C.issubset(S):
@@ -114,7 +115,7 @@ def merge_nodes_subset(
         if not T:
             continue
 
-        deltas: List[Tuple[object, float]] = []
+        deltas: List[Tuple[CommunityId, float]] = []
         for cid in T:
             d = delta_fn(G, P, v, cid)
             if d >= 0:
@@ -127,7 +128,7 @@ def merge_nodes_subset(
         total = sum(weights)
         r = random.random() * total
         acc = 0.0
-        chosen: Optional[object] = None
+        chosen: Optional[CommunityId] = None
         for (cid, _d), w in zip(deltas, weights):
             acc += w
             if r <= acc:

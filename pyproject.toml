@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
+
 dependencies = [
     "matplotlib>=3.10.7",
 ]
@@ -13,3 +14,11 @@ dev = [
     "ipykernel>=7.1.0",
     "jupyterlab>=4.4.10",
 ]
+
+[tool.setuptools]
+package-dir = {"" = "."}
+
+# discover packages named "src*" (i.e., src, src.lib, src.lib.domain, etc.)
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]

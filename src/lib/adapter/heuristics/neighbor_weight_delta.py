@@ -5,10 +5,15 @@ from src.lib.domain.models.partition import Partition
 from src.lib.domain.types.nodes import NodeLike
 from src.lib.domain.types.general import CommunityId
 
-def heuristic_delta_by_neighbor_weight(G: Graph, P: Partition, v: NodeLike, dest: Optional[CommunityId]) -> float:
+def heuristic_delta_by_neighbor_weight(
+    G: Graph,
+    P: Partition,
+    v: NodeLike,
+    dest: Optional[CommunityId],
+) -> float:
     """
-    Simple (not theoretically exact) delta: prefer communities with higher total edge weight from v.
-    Penalize leaving the current community by comparing to current connectivity.
+    Simple (not theoretically exact) delta: prefer communities with higher total
+    edge weight from v. Leaving current community is penalized by comparison.
     Treat dest=None as a fresh singleton with zero internal connectivity.
     """
     cur = P.community_of(v)
