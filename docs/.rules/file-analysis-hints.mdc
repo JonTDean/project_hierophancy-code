@@ -1,0 +1,17 @@
+---
+description: Pick files that best reveal our current standards and invariants.
+globs: "**/*"
+---
+
+# File Analysis Hints (What to Read First)
+
+Prioritize:
+- **`src/lib/domain/models/*`** for core types and invariants (e.g., graph/partition semantics).
+- **`src/lib/port/*`** for expected interfaces and dependency direction.
+- **`tests/unit/*`** for naming, fixtures, and invariant-driven checks.
+- **`adapter/*`** for I/O boundaries and logging patterns.
+
+If patterns conflict:
+- **Ports and Domain win** (they define invariants).
+- Prefer **most recently touched** files in the same area.
+- When in doubt, keep code **pure** and **parametric**; push side effects to adapters.

@@ -1,0 +1,17 @@
+---
+description: Consistent naming across Python core and optional TS/React UI.
+globs: "**/*"
+---
+
+# Directory & File Naming
+
+## Python (src/lib, tests, scripts)
+- Directories: `snake_case`
+- Files/modules: `snake_case.py`
+- Tests: `tests/unit/test_<module>.py`, `tests/integration/test_<topic>.py`
+- Packages must include `__init__.py`
+
+## General
+- No spaces; ASCII only
+- Avoid deep nesting beyond 5 levels
+- Use **singular** for concept dirs: `model`, `service` only when it improves clarity; otherwise follow existing `models/`, `services/` patterns in repo

@@ -1,0 +1,49 @@
+---
+description: Required doc header at the top of code files (module-level).
+alwaysApply: true
+globs:
+  - "src/**/*.py"
+  - "tests/**/*.py"
+  - "scripts/**/*.py"
+  - "apps/**/*.{ts,tsx,js,jsx}"
+---
+
+# Code Header — Required
+
+## Placement
+- Python: module docstring on line 1 (below shebang/`__future__` if present).
+- TS/JS: block comment on line 1.
+
+## Fields (single-line each)
+- **Status**: one of ✅ 🔄 📝 ❌ + brief note.
+- **Summary**: one-sentence purpose.
+- **I/O**: inputs → outputs.
+- **Contracts**: 1–2 key invariants.
+- **Tests**: primary test file(s).
+- **Refs**: paper/section or pseudocode lines.
+
+## Template — Python
+```py
+"""
+Status: 🔄 WIP — refining delta_fn
+Summary: Leiden orchestration with refinement and aggregation.
+I/O: (G: Graph, P: Partition, delta_fn) → list[set[Node]]
+Contracts: partition size non-increasing; aggregation preserves weights.
+Tests: tests/unit/test_leiden_core.py
+Refs: Traag 2019; pseudocode 1–12.
+"""
+````
+
+## Template — TS/JS
+
+```ts
+/**
+ * Status: ✅ stable — v1
+ * Summary: Convex hull visualizer for community layouts.
+ * I/O: positions: Point[] → void (render)
+ * Contracts: no side effects outside container; idempotent for same props.
+ * Tests: apps/__tests__/convex_hull.test.tsx
+ * Refs: docs/visuals.md §Hull.
+ */
+```
+

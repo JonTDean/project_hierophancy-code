@@ -1,0 +1,125 @@
+---
+alwaysApply: true
+description: Keep /docs/references/file_structure.md in sync with the actual repo tree (Python hex-arch + algorithms).
+---
+
+# Directory Structure Tracking (project_hierophancy)
+
+## Purpose
+Continuously maintain an accurate directory map as the single source of truth for repository layout.
+
+## Trigger Events
+- File/dir created, moved/renamed, or deleted
+- Codegen outputs added/removed
+- Refactors across hex layers (domain/port/adapter)
+- Algorithm module/version added
+
+## Actions to Take
+
+1. **Read current structure** from `/docs/references/file_structure.md`.
+
+2. **Scan the file system** (root of repo), **excluding**:
+   - `.git/`, `.idea/`, `.vscode/`, `.DS_Store`
+   - `__pycache__/`, `.mypy_cache/`, `.pytest_cache/`, `.ruff_cache/`, `.tox/`
+   - `.venv/`, `venv/`, `dist/`, `build/`, `coverage/`
+   - `node_modules/`, `.next/`, `.turbo/`, `out/`
+   - `*.ipynb_checkpoints/`
+
+   Record these roots (when present):
+```
+
+src/
+└── lib/
+├── domain/
+│   ├── models/
+│   ├── types/
+│   └── services/
+├── port/
+├── adapter/
+│   ├── graph/
+│   ├── layout/
+│   ├── visualizer/
+│   └── io/
+tests/
+├── unit/
+└── integration/
+notebooks/
+apps/           (optional TS/React UI)
+scripts/
+docs/
+└── references/
+
+```
+
+3. **Replace** the contents of `/docs/references/file_structure.md` with the new tree.
+
+4. **Annotate status** for key files using:
+- `✅` implemented/verified
+- `🔄` in-progress
+- `📝` planned
+- `❌` deprecated/removed
+
+## Reference File
+- **Primary**: `/docs/references/file_structure.md`
+- **Update**: Real-time (on change) or via CI on PR
+- **Format**: Markdown code-fenced tree
+
+## Integration Notes
+- Treat `domain/` as pure and dependency-light; `adapter/` may touch I/O/viz.
+- Applied algorithms (e.g., Leiden) live under `src/lib/adapters/algorithms/<name>/` while the invariant definitions (distance, vectorization, normalization, lemmitization, and other task classes) live under `src/lib/domain/algorithms/<name>/`.
+- Consider a lightweight script (`scripts/print_tree.py`) to regenerate the tree.
+- Commit the updated reference with structural PRs.
+
+## Example Output Format
+```
+
+src/
+└── lib/
+├── domain/
+│   ├── models/
+│   │   ├── graph.py                ✅ Core graph model
+│   │   └── partition.py            🔄 Community partition
+│   ├── types/
+│   │   └── nodes.py                ✅ NodeLike types
+│   └── services/                   📝 Domain services (pure)
+├── port/
+│   └── graph.py                    ✅ GraphBuilderPort, DeltaFn
+├── adapter/
+│   ├── graph/from_edges.py         ✅ Build graph from edge list
+│   ├── layout/random_layout.py     📝 Simple random layout
+│   ├── visualizer/convex_hull.py   ✅ Matplotlib visualizer
+│   ├── io/                         📝 Readers/Writers
+│   └──algorithms/
+│       └── leiden/
+│           ├── core.py                 ✅ Top-level Leiden orchestration
+│           ├── delta.py                🔄 Objective (ΔH_P) strategies
+│           ├── refine.py               🔄 Refinement stage helpers
+│           └── aggregate.py            ✅ Graph aggregation
+└── utils/
+   ├── logging.py                  ✅ Logger config
+   └── timer.py                    ✅ Scoped timers
+
+tests/
+├── unit/
+│   ├── test_graph.py                   ✅ Graph invariants
+│   ├── test_partition.py               ✅ Partition ops
+│   └── test_leiden_core.py             🔄 Small graphs / expected splits
+└── integration/
+└── test_end_to_end.py              📝 Pipeline checks
+
+notebooks/                               📝 Exploratory runs
+apps/                                    📝 Optional TS/React UI
+scripts/                                 ✅ Dev tooling
+docs/
+└── references/
+└── file_structure.md               ✅ (this file)
+
+```
+
+## Status Indicators Legend
+- `✅` Implemented & verified
+- `🔄` In progress
+- `📝` Planned
+- `❌` Deprecated/removed
+- *(none)* Standard item
+

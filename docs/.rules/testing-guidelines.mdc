@@ -1,0 +1,35 @@
+---
+description: Pytest-first testing for graph/partition and algorithms; invariant-driven with minimal dependencies.
+globs: "**/*"
+---
+
+# Testing Guidelines (pytest)
+
+## Scope & Levels
+- **Unit** (`tests/unit/`): pure functions, models, ports.
+- **Integration** (`tests/integration/`): algorithm flows, adapter I/O surfaces.
+- **Performance smoke** (optional): guard against pathological slowdowns on small graphs.
+
+## Tools & Conventions
+- **Runner**: `pytest -q`
+- **Coverage**: target 80%+ overall; require targeted coverage for algorithms’ core paths.
+- **Parametrize**: prefer `@pytest.mark.parametrize` for scenario tables.
+- **Fixtures**: tiny graphs (`triangle`, `line`, `star`, `bridge`) in `conftest.py`.
+- **Randomness**: fix seeds; pass RNGs explicitly.
+
+## What to Test
+- **Graph invariants**: degree sums, symmetry, aggregation weight preservation.
+- **Partition ops**: moves, merges, flattening; set membership correctness.
+- **Leiden stages**: `MoveNodesFast`, `RefinePartition`, `AggregateGraph` behaviors.
+- **Objective monotonicity** (when required by chosen ΔH_P).
+- **Edge cases**: isolated nodes, multi-edges, zero/negative weights (if supported), empty partitions.
+- **Error paths**: invalid inputs raise the *right* exception with clear text.
+
+## UI/API (if present)
+- Keep separate test projects (`apps/`); reuse existing tooling there.
+- E2E only if the UI/API is part of this repo’s CI; otherwise out of scope.
+
+## Anti-Patterns
+- Overuse of snapshots; prefer explicit assertions.
+- Golden files that break with minor refactors.
+- Tests relying on network/FS unless in adapters and marked accordingly.

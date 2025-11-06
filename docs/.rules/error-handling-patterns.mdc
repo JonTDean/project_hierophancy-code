@@ -1,0 +1,41 @@
+---
+description: Error handling for project_hierophancy (Python library + CLIs/notebooks; optional API/UI).
+globs: "**/*"
+---
+
+# Error Handling Patterns
+
+## Python Library (default)
+- **Validate inputs** at boundaries; fail fast with clear messages.
+- **Raise**: ValueError (bad args), TypeError (wrong types), KeyError (missing nodes), RuntimeError (algorithmic failure).
+- **No prints** in library code; use `logging.getLogger(__name__)`.
+- **Determinism**: seed RNG in tests/bench; pass RNG where appropriate.
+- **Never swallow** exceptions; re-raise with context (`raise ... from e`).
+
+## Algorithms
+- Check graph preconditions (no negative weights unless supported).
+- Preserve invariants (e.g., non-decreasing objective if required); assert when compiled for tests.
+- Timeboxed/iteration-capped loops should raise with hint to inputs.
+
+## Adapters (I/O, viz)
+- Wrap file/network I/O in try/except; attach file path/URL to messages.
+- Use **explicit timeouts** for network calls (if any).
+- On recoverable errors, return typed results (`Result`-like or documented `None`) and **log** at `warning`.
+
+## CLI / Scripts
+- Parse args robustly; exit non-zero on failure.
+- Human-friendly messages; verbose mode for stack traces.
+- Defensive checks for paths and permissions.
+
+## Notebooks
+- Use small **asserts** to guard assumptions (dataset size, edge weights).
+- Avoid catching broadly; let errors surface during exploration.
+
+## Optional API (if present, e.g., FastAPI)
+- Map exceptions to HTTP with handlers (400/404/422/500).
+- Redact sensitive values in logs.
+- Return structured errors: `{"error": {"code": "...", "message": "...", "details": {...}}}`.
+
+## Optional UI (if present)
+- Surface actionable messages; hide internals.
+- Retry transient failures; backoff for 5xx.

@@ -1,0 +1,17 @@
+---
+description: Keep changes within project_hierophancy’s established style and hex boundaries.
+globs: "**/*"
+---
+
+# Style Consistency — Best Practices
+
+1. **Respect boundaries**: domain stays pure; adapters handle side effects.
+2. **Stay scoped**: no broad refactors while fixing a local issue.
+3. **Mirror comments**: short, purposeful; reference equations/pseudocode lines when helpful.
+4. **Naming**: use project lexicon (Graph, Partition, Community, DeltaFn, etc.).
+5. **Tri-Paradigmal alignment**: small, pure functions; dataclasses for data, ABC/Protocol for ports.
+6. **Libraries**: no new deps unless already pinned or explicitly approved.
+7. **Placement**: new code goes where similar code lives; avoid duplicate utilities.
+8. **Recency wins**: newer files in the same area set the tone.
+9. **Docs**: update `/docs/references/file_structure.md` when reorganizing.
+10. **Tests**: add/adjust tests that reflect invariants and real edge cases.

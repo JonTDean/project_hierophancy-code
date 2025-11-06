@@ -1,0 +1,31 @@
+---
+description: Adapt new code to project_hierophancy’s hexagonal Python architecture and local idioms.
+globs: "**/*"
+---
+
+# Adaptation Techniques (Hex Arch + Algorithms)
+
+1. **Layer discipline**: keep purity boundaries.
+   - `domain/` pure types/models/services; no I/O; no heavy deps.
+   - `port/` abstract protocols/ABCs only.
+   - `adapter/` side effects (I/O, viz, parsing).
+
+2. **Pattern mirroring**: clone structure of nearest similar module (e.g., `algorithms/leiden/*` for new algos).
+
+3. **Naming dictionary**:
+   - Graph, Partition, Community, DeltaFn, MoveNodesFast, RefinePartition, AggregateGraph.
+   - Use `snake_case` for files/functions, `PascalCase` for classes, `UPPER_CASE` for constants.
+
+4. **Imports order**: stdlib → third-party (rare) → internal (`src.lib.*`), with absolute imports.
+
+5. **Error shapes**: `ValueError` for bad args, `TypeError` for type misuse, `KeyError` for missing nodes, `RuntimeError` for algorithmic impossibility.
+
+6. **Comments & docs**: brief line comments near tricky steps; module docstring with purpose & invariants; reference pseudocode line numbers when porting algorithms.
+
+7. **Function size**: split long routines; keep hot-paths tight; extract helpers (`_private_helper`) as needed.
+
+8. **Tests**: mirror existing pytest style (parametrize, tiny fixtures); prefer invariants over brittle golden outputs.
+
+9. **Types**: mandatory type hints; `from __future__ import annotations`; prefer `@dataclass` where sensible; `Protocol`/`ABC` for ports.
+
+10. **No new deps**: use stdlib first; add libs only if already pinned in `pyproject.toml` or previously used.
